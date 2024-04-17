@@ -15,25 +15,34 @@ namespace Bots
             "\n" +
             "A script in which you will need to write everything that needs to be prepared for the bot to work.")]
 
-        [SerializeField] private BotPrepperForWork PrepperForWork;
+        [SerializeField] private BotPrepperForWork prepperForWork;
 
         [Space]
         [Tooltip("—юда поставл€ютс€ скрипты, а которых должно быть прописано поведение определЄнного типа, которое ожидаетс€ от бота." +
             "\n" +
             "Scripts are supplied here, and which should specify the behavior of a certain type that is expected from the bot.")]
 
-        [SerializeField] private BotComandFollow FollowComandScript;
-        [SerializeField] private BotComandInteract InteractComandScript;
-        [SerializeField] private BotComandAction ActionComandScript;
+        [SerializeField] private BotComandFollow followComandScript;
+        [SerializeField] private BotComandInteract interactComandScript;
+        [SerializeField] private BotComandAction actionComandScript;
+
+
+        [Space]
+        [SerializeField] BotHub botHub;
+
 
         private void Start()
         {
+            botHub = GameObject.Find("BotHub").GetComponent<BotHub>();
+            BotSubscribtorOnDelegate();
             BotPrepperForWork();
         }
         public void BotPrepperForWork()
         {
-            PrepperForWork.PrepperForWork(this);
+            botHub.SlaveGetSettings(ref prepperForWork, ref followComandScript, ref interactComandScript,ref actionComandScript);
+            prepperForWork.PrepperForWork(this);
         }
+
         public void BotBehaviorController(IBotMaster master, BotComands comand)
         {
             if (master == myMaster)
@@ -41,13 +50,13 @@ namespace Bots
                 switch (comand)
                 {
                     case BotComands.Follow:
-                        FollowComandScript.FollowComand(this);
+                        followComandScript.FollowComand(this);
                         break;
                     case BotComands.Interact:
-                        InteractComandScript.InteractComand(this);
+                        interactComandScript.InteractComand(this);
                         break;
                     case BotComands.Action:
-                        ActionComandScript.ActionComand(this);
+                        actionComandScript.ActionComand(this);
                         break;
                     default:
                         Debug.LogError(this + " the bot cannot execute or execute the command " + comand);
@@ -58,12 +67,17 @@ namespace Bots
 
         public void BotDescriptorOnDelegate()
         {
-            BotHub.behavior -= BotBehaviorController;
+            botHub.BotSubscribtor(BotBehaviorController);
         }
 
         public void BotSubscribtorOnDelegate()
         {
-            BotHub.behavior += BotBehaviorController;
+            botHub.BotSubscribtor(BotBehaviorController);
+        }
+
+        public void SetMaster(IBotMaster newMaster)
+        {
+            myMaster = newMaster;
         }
     }
 }
